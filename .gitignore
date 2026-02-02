@@ -1,0 +1,42 @@
+### Secrets
+.env
+.env.*
+!*.example
+
+### Logs
+logs/
+*.log
+
+### OS
+.DS_Store
+Thumbs.db
+
+### Ide
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+
+### Go build
+bin/
+*.exec
+*.exec~
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+### Go modules
+/vendor/
+/dist/
+/tmp/
+/coverage.out
+
+### Other
+/testing/
+/ex/
