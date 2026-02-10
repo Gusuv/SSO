@@ -18,3 +18,11 @@ func Register(grpc *grpc.Server) {
 func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginReq) (*sso1.LoginResp, error) {
 	panic("In development")
 }
+
+func (s *serverAPI) Logout(ctx context.Context, req *sso1.LogoutReq) (*sso1.LogoutResp, error) {
+	panic("In development")
+}
+
+func (s *serverAPI) AdminCheck(ctx context.Context, req *sso1.AdminCheckReq) (*sso1.AdminCheckResp, error) {
+	panic("In development")
+}
