@@ -1,4 +1,4 @@
-package app
+package appgrpc
 
 import (
 	"log/slog"
