@@ -46,3 +46,12 @@ func (a *App) Run() error {
 
 	return nil
 }
+
+func (a *App) GracefulStop() {
+
+	const oper = "appgrpc.Stop"
+
+	a.log.With(slog.String("oper", oper)).Info("gRPC Stopped", slog.Int("port", a.port))
+
+	a.gRPCServer.GracefulStop()
+}
