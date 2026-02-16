@@ -16,8 +16,7 @@ func Register(grpc *grpc.Server) {
 }
 
 func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginReq) (*sso1.LoginResp, error) {
-	//panic("In development")
-	return &sso1.LoginResp{Token: "djfjfvj"}, nil
+	panic("In development")
 }
 
 func (s *serverAPI) Logout(ctx context.Context, req *sso1.LogoutReq) (*sso1.LogoutResp, error) {
