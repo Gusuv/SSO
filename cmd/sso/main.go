@@ -1,9 +1,13 @@
 package main
 
 import (
+	"log/slog"
 	"main/internal/app"
 	"main/internal/config"
 	"main/logger"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -14,7 +18,18 @@ func main() {
 
 	application := app.New(log, cfg.Grpc.Port, cfg.DbPath, cfg.TokenTTL)
 
-	application.GRPCServer.Run()
+	go application.GRPCServer.Run()
+
+	stopped := make(chan os.Signal, 1)
+	signal.Notify(stopped, syscall.SIGTERM, syscall.SIGINT)
+
+	stopName := <-stopped
+
+	log.Info("Stopping", slog.String("signal", stopName.String()))
+
+	application.GRPCServer.GracefulStop()
+
+	log.Info("Stopped")
 
 	// In development
 
