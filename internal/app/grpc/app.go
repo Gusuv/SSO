@@ -72,5 +72,3 @@ func (a *App) ReadStop() {
 	a.log.Info("Stopped")
 
 }
-
-// TODO: COMMIT THIS SHIT
