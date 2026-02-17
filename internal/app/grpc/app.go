@@ -3,6 +3,10 @@ package appgrpc
 import (
 	"fmt"
 	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
+
 	authRPC "main/internal/grpc/auth"
 	"net"
 
@@ -47,11 +51,26 @@ func (a *App) Run() error {
 	return nil
 }
 
-func (a *App) GracefulStop() {
+func (a *App) stop() {
 
 	const oper = "appgrpc.Stop"
 
-	a.log.With(slog.String("oper", oper)).Info("gRPC Stopped", slog.Int("port", a.port))
+	a.log.With(slog.String("operation", oper)).Info("gRPC Stopped", slog.Int("port", a.port))
 
 	a.gRPCServer.GracefulStop()
 }
+
+func (a *App) ReadStop() {
+
+	stopped := make(chan os.Signal, 1)
+	signal.Notify(stopped, syscall.SIGTERM, syscall.SIGINT)
+
+	stopName := <-stopped
+
+	a.log.Info("Stopping", slog.String("signal", stopName.String()))
+	a.stop()
+	a.log.Info("Stopped")
+
+}
+
+// TODO: COMMIT THIS SHIT
