@@ -19,6 +19,10 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginReq) (*sso1.LoginR
 	panic("In development")
 }
 
+func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterReq) (*sso1.RegisterResp, error) {
+	panic("In development")
+}
+
 func (s *serverAPI) Logout(ctx context.Context, req *sso1.LogoutReq) (*sso1.LogoutResp, error) {
 	panic("In development")
 }
