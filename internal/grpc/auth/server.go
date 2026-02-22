@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"main/internal/validation"
 	"strings"
 
 	sso1 "github.com/Gusuv/sso-protos/generated/go/sso"
@@ -23,40 +24,25 @@ func Register(grpc *grpc.Server) {
 	sso1.RegisterAuthServiceServer(grpc, &serverAPI{})
 }
 
-func requiredData(dataFields map[string]string) error {
-	for name, value := range dataFields {
-		if strings.TrimSpace(value) == "" {
-			return status.Errorf(codes.InvalidArgument, "%s is required", name)
-		}
-	}
-	return nil
-}
-
 func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.LoginResponse, error) {
 	email := strings.TrimSpace(req.GetEmail())
 	password := strings.TrimSpace(req.GetPassword())
 
-	if err := requiredData(map[string]string{
-		"Email":    email,
-		"Password": password}); err != nil {
-		return nil, err
+	if err := validation.LoginValidation(email, password); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-
 	return &sso1.LoginResponse{}, nil
 }
 
 func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*sso1.RegisterResponse, error) {
+	username := strings.TrimSpace(req.GetUsername())
 	email := strings.TrimSpace(req.GetEmail())
 	password := strings.TrimSpace(req.GetPassword())
-	username := strings.TrimSpace(req.GetUsername())
 
-	if err := requiredData(map[string]string{
-		"Email":    email,
-		"Password": password,
-		"Username": username,
-	}); err != nil {
-		return nil, err
+	if err := validation.RegisterValidation(username, email, password); err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+
 	return &sso1.RegisterResponse{Success: true}, nil
 }
 
