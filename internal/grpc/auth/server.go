@@ -25,10 +25,12 @@ func Register(grpc *grpc.Server) {
 }
 
 func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.LoginResponse, error) {
+
 	email := strings.TrimSpace(req.GetEmail())
 	password := strings.TrimSpace(req.GetPassword())
+	appid := req.GetAppId()
 
-	if err := validation.LoginValidation(email, password); err != nil {
+	if err := validation.LoginValidation(email, password, appid); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	return &sso1.LoginResponse{}, nil
