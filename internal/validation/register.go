@@ -16,7 +16,7 @@ func RegisterValidation(username, email, password string) error {
 func requiredRegster(username, email, password string) error {
 
 	if username == "" {
-		return errors.New("Username is require")
+		return errors.New("Username is required")
 	}
 	if email == "" {
 		return errors.New("Email is required")
