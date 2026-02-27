@@ -12,16 +12,21 @@ import (
 )
 
 type Auth interface {
-	// TODO: Add Service methods
-	// In development
+	UserLogin(ctx context.Context, email, password string, appID int) (accessToken, refreshToken string, err error)
+	UserRegister(ctx context.Context, username, email, password string) (success bool, err error)
+	AdminCheck(ctx context.Context, accessToken string) (bool, error)
 }
 
 type serverAPI struct {
 	sso1.UnimplementedAuthServiceServer
+	auth Auth
 }
 
-func Register(grpc *grpc.Server) {
-	sso1.RegisterAuthServiceServer(grpc, &serverAPI{})
+func Register(grpcServ *grpc.Server, auth Auth) {
+	sso1.RegisterAuthServiceServer(grpcServ, &serverAPI{
+		auth: auth,
+	})
+
 }
 
 func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.LoginResponse, error) {
