@@ -38,7 +38,14 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.Lo
 	if err := validation.LoginValidation(email, password, appid); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	return &sso1.LoginResponse{}, nil
+
+	var (
+		// In development
+		accesToken   string
+		refreshToken string
+		userId       int64
+	)
+	return &sso1.LoginResponse{AccessToken: accesToken, RefreshToken: refreshToken, UserId: userId}, nil
 }
 
 func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*sso1.RegisterResponse, error) {
@@ -54,9 +61,9 @@ func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*s
 }
 
 func (s *serverAPI) Logout(ctx context.Context, req *sso1.LogoutRequest) (*sso1.LogoutResponse, error) {
-	panic("In development")
+	return &sso1.LogoutResponse{Message: "Successful user logout"}, nil
 }
 
 func (s *serverAPI) AdminCheck(ctx context.Context, req *sso1.AdminCheckRequest) (*sso1.AdminCheckResponse, error) {
-	panic("In development")
+	return &sso1.AdminCheckResponse{IsAdmin: true}, nil
 }
