@@ -32,7 +32,7 @@ func Register(grpcServ *grpc.Server, auth Auth) {
 func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.LoginResponse, error) {
 
 	email := strings.TrimSpace(req.GetEmail())
-	password := strings.TrimSpace(req.GetPassword())
+	password := req.GetPassword()
 	appid := req.GetAppId()
 
 	if err := validation.LoginValidation(email, password, appid); err != nil {
@@ -51,7 +51,7 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.Lo
 func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*sso1.RegisterResponse, error) {
 	username := strings.TrimSpace(req.GetUsername())
 	email := strings.TrimSpace(req.GetEmail())
-	password := strings.TrimSpace(req.GetPassword())
+	password := req.GetPassword()
 
 	if err := validation.RegisterValidation(username, email, password); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
