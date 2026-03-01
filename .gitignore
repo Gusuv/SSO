@@ -41,3 +41,4 @@ bin/
 ### Other
 /testing/
 /ex/
+Taskfile.yaml
