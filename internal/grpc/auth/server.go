@@ -11,15 +11,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type Auth interface {
-	UserLogin(ctx context.Context, email, password string, appID int) (accessToken, refreshToken string, err error)
-	UserRegister(ctx context.Context, username, email, password string) (success bool, err error)
-	AdminCheck(ctx context.Context, accessToken string) (bool, error)
-}
-
 type serverAPI struct {
 	sso1.UnimplementedAuthServiceServer
 	auth Auth
+}
+
+type Auth interface {
+	UserLogin(ctx context.Context, email, password string, appID int64) (accessToken, refreshToken string, userId int64, err error)
+	UserRegister(ctx context.Context, username, email, password string) (success bool, err error)
+	AdminCheck(ctx context.Context, accessToken string) (bool, error)
 }
 
 func Register(grpcServ *grpc.Server, auth Auth) {
@@ -33,19 +33,16 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.Lo
 
 	email := strings.TrimSpace(req.GetEmail())
 	password := req.GetPassword()
-	appid := req.GetAppId()
 
-	if err := validation.LoginValidation(email, password, appid); err != nil {
+	if err := validation.LoginValidation(email, password, req.GetAppId()); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	var (
-		// In development
-		accesToken   string
-		refreshToken string
-		userId       int64
-	)
-	return &sso1.LoginResponse{AccessToken: accesToken, RefreshToken: refreshToken, UserId: userId}, nil
+	accessToken, refreshToken, userId, err := s.auth.UserLogin(ctx, email, password, req.GetAppId())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to login")
+	}
+	return &sso1.LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken, UserId: userId}, nil
 }
 
 func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*sso1.RegisterResponse, error) {
@@ -57,7 +54,12 @@ func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*s
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	return &sso1.RegisterResponse{Success: true}, nil
+	success, err := s.auth.UserRegister(ctx, username, email, password)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to register user")
+	}
+
+	return &sso1.RegisterResponse{Success: success}, nil
 }
 
 func (s *serverAPI) Logout(ctx context.Context, req *sso1.LogoutRequest) (*sso1.LogoutResponse, error) {
