@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	Env      string        `yaml:"env" env-default:"local"`
-	DbPath   string        `yaml:"db_path" env-reload:"true"`
+	DbDsn    string        `yaml:"db_dsn" env-reload:"true"`
 	TokenTTL time.Duration `yaml:"token_ttl" env-required:"true"`
 	Grpc     GrpcConfig    `yaml:"grpc"`
 }
