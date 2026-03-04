@@ -13,7 +13,7 @@ func main() {
 
 	log := logger.AddLogger(cfg.Env)
 
-	db := db.MustDbConnect(log, cfg.DbPath)
+	db := db.MustDbConnect(log, cfg.DbDsn)
 
 	app := app.New(log, cfg.Grpc.Port, cfg.TokenTTL, db)
 
