@@ -59,7 +59,7 @@ func connectionPool(db *sql.DB, log *slog.Logger, env string) {
 		db.SetConnMaxLifetime(time.Hour)
 		db.SetMaxOpenConns(20)
 		db.SetConnMaxIdleTime(5 * time.Minute)
-		log.Warn("env is not defined", env)
+		log.Warn("env is not defined", "env", env)
 
 	}
 }
