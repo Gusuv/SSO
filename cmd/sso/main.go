@@ -3,7 +3,7 @@ package main
 import (
 	"main/internal/app"
 	"main/internal/config"
-	db "main/internal/database"
+	"main/internal/database"
 	"main/logger"
 )
 
@@ -13,11 +13,15 @@ func main() {
 
 	log := logger.AddLogger(cfg.Env)
 
-	db := db.MustDbConnect(log, *cfg)
+	db := database.MustDbConnect(log, cfg)
 
-	app := app.New(log, cfg.Grpc.Port, cfg.TokenTTL, db)
+	app := app.New(log, cfg, db)
 
-	go app.GRPCServer.Run()
+	go func() {
+		if err := app.GRPCServer.Run(); err != nil {
+			log.Error("grpc server stopped", "error", err)
+		}
+	}()
 
 	app.GRPCServer.ReadStop()
 
