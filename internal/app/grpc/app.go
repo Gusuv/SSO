@@ -3,7 +3,6 @@ package appgrpc
 import (
 	"fmt"
 	"log/slog"
-	"main/internal/grpc/auth"
 	authRPC "main/internal/grpc/auth"
 	"os"
 	"os/signal"
@@ -20,7 +19,7 @@ type App struct {
 	port       int
 }
 
-func New(log *slog.Logger, port int, authService auth.Auth) *App {
+func New(log *slog.Logger, port int, authService authRPC.Auth) *App {
 	gRPCServer := grpc.NewServer()
 
 	authRPC.Register(gRPCServer, authService)
@@ -40,13 +39,13 @@ func (a *App) Run() error {
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
 
 	if err != nil {
-		return fmt.Errorf("%s: %w:", oper, err)
+		return fmt.Errorf("%s: %w", oper, err)
 	}
 
 	log.Info("gRPC Run", slog.String("addr", l.Addr().String()))
 
 	if err := a.gRPCServer.Serve(l); err != nil {
-		return fmt.Errorf("%s: %w:", oper, err)
+		return fmt.Errorf("%s: %w", oper, err)
 	}
 
 	return nil
@@ -56,9 +55,9 @@ func (a *App) stop() {
 
 	const oper = "appgrpc.Stop"
 
-	a.log.With(slog.String("operation", oper)).Info("gRPC Stopped", slog.Int("port", a.port))
-
 	a.gRPCServer.GracefulStop()
+
+	a.log.With(slog.String("operation", oper)).Info("gRPC Stopped", slog.Int("port", a.port))
 }
 
 func (a *App) ReadStop() {
