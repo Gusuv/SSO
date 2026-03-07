@@ -1,7 +1,13 @@
 env: "local"
-db_path: "./storage/SSO.db"
+
 token_ttl: 1h
 
 grpc:
   port: 44044
   timeout: 5s
+
+db:
+  host: "localhost"
+  name: "sso"
+  port: 5432
+  sslmode: "disable"
