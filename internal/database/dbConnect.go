@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"database/sql"
@@ -11,18 +11,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func MustDbConnect(log *slog.Logger, cfg config.Config) *gorm.DB {
+func MustDbConnect(log *slog.Logger, cfg *config.Config) *gorm.DB {
 	log.Info("Connecting to database")
-	db, err := gorm.Open(postgres.Open(cfg.DbDsn), &gorm.Config{})
+
+	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
 	if err != nil {
 		log.Error("Connection failed", "error", err)
 		panic(fmt.Errorf("Database connect failed: %w", err))
 	}
 	dbSQL, err := db.DB()
 	if err != nil {
-		panic(fmt.Errorf("Can`t get SQL.db: %w", err))
+		log.Warn("Can`t get SQL.db: %w", "error", err)
 	}
-
 	checkConnection(dbSQL, log)
 
 	connectionPool(dbSQL, log, cfg.Env)
