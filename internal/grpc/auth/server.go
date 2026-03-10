@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log/slog"
 	"main/internal/validation"
 	"strings"
 
@@ -14,6 +15,7 @@ import (
 type serverAPI struct {
 	sso1.UnimplementedAuthServiceServer
 	auth Auth
+	log  *slog.Logger
 }
 
 type Auth interface {
@@ -22,9 +24,10 @@ type Auth interface {
 	AdminCheck(ctx context.Context, accessToken string) (bool, error)
 }
 
-func Register(grpcServ *grpc.Server, auth Auth) {
+func Register(grpcServ *grpc.Server, auth Auth, log *slog.Logger) {
 	sso1.RegisterAuthServiceServer(grpcServ, &serverAPI{
 		auth: auth,
+		log:  log,
 	})
 
 }
