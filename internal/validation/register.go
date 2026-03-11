@@ -3,17 +3,19 @@ package validation
 import "errors"
 
 func RegisterValidation(username, email, password string) error {
-	if err := requiredRegster(username, email, password); err != nil {
+	if err := requiredRegister(username, email, password); err != nil {
 		return err
 	}
 	if err := passwordLen(password); err != nil {
 		return err
 	}
-	// In development
+	if err := emailValidate(email); err != nil {
+		return err
+	}
 	return nil
 }
 
-func requiredRegster(username, email, password string) error {
+func requiredRegister(username, email, password string) error {
 
 	if username == "" {
 		return errors.New("Username is required")
