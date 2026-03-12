@@ -36,6 +36,8 @@ func notEmpty(email, password string, appId int64) error {
 func passwordLen(password string) error {
 	if len(password) < 8 {
 		return errors.New("Password too short")
+	} else if len(password) >= 72 {
+		return errors.New("Password too long")
 	}
 	return nil
 }
