@@ -14,7 +14,7 @@ import (
 func MustDbConnect(log *slog.Logger, cfg *config.Config) *gorm.DB {
 	log.Info("Connecting to database")
 
-	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{TranslateError: true})
 	if err != nil {
 		log.Error("Connection failed", "error", err)
 		panic(fmt.Errorf("Database connect failed: %w", err))
