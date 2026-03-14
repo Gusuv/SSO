@@ -1,50 +1,52 @@
 package validation
 
-import (
-	"errors"
-	"strings"
-)
+import "regexp"
 
 func LoginValidation(email, password string, appId int64) error {
-	if err := notEmpty(email, password, appId); err != nil {
-		return err
-	}
-	if err := passwordLen(password); err != nil {
-		return err
-	}
 	if err := emailValidate(email); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func notEmpty(email, password string, appId int64) error {
-
-	if email == "" {
-		return errors.New("Email is required")
-	}
-	if password == "" {
-		return errors.New("Password is required")
+	if err := passwordValidate(password); err != nil {
+		return err
 	}
 	if appId == 0 {
-		return errors.New("AppID required")
+		return RequiredAppId
 	}
+
 	return nil
 }
 
-func passwordLen(password string) error {
-	if len(password) < 8 {
-		return errors.New("Password too short")
-	} else if len(password) >= 72 {
-		return errors.New("Password too long")
-	}
-	return nil
-}
+var (
+	emailRegex    = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}$`)
+	usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
+)
+
+const (
+	minPasswordLen = 8
+	maxPasswordLen = 60
+	minUsernameLen = 2
+	maxUsernameLen = 40
+)
 
 func emailValidate(email string) error {
-	if !strings.Contains(email, "@") {
-		return errors.New("Email is not exist")
+	if email == "" {
+		return RequiredEmail
+	}
+	if !emailRegex.MatchString(email) {
+		return InvalidEmail
+	}
+	return nil
+}
+
+func passwordValidate(password string) error {
+	if password == "" {
+		return RequiredPassword
+	}
+	if len(password) < minPasswordLen {
+		return ShortPassword
+	}
+	if len(password) > maxPasswordLen {
+		return LongPassword
 	}
 	return nil
 }
