@@ -1,30 +1,32 @@
 package validation
 
-import "errors"
-
 func RegisterValidation(username, email, password string) error {
-	if err := requiredRegister(username, email, password); err != nil {
-		return err
-	}
-	if err := passwordLen(password); err != nil {
+
+	if err := usernameValidate(username); err != nil {
 		return err
 	}
 	if err := emailValidate(email); err != nil {
 		return err
 	}
+	if err := passwordValidate(password); err != nil {
+		return err
+	}
 	return nil
 }
 
-func requiredRegister(username, email, password string) error {
-
+func usernameValidate(username string) error {
 	if username == "" {
-		return errors.New("Username is required")
+		return RequiredUsername
 	}
-	if email == "" {
-		return errors.New("Email is required")
+	if len(username) < minUsernameLen {
+		return ShortUsername
 	}
-	if password == "" {
-		return errors.New("Password is required")
+	if len(username) > maxUsernameLen {
+		return LongUsername
 	}
+	if !usernameRegex.MatchString(username) {
+		return InvalidUsername
+	}
+
 	return nil
 }
