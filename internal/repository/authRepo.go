@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"main/internal/models"
 
 	"gorm.io/gorm"
@@ -15,25 +17,55 @@ func NewRepo(db *gorm.DB) *AuthRep {
 	return &AuthRep{db: db}
 }
 
-func (a *AuthRep) CreateUser(ctx context.Context, username, email, passwordHash string) (error, int64) {
-	user := models.Users{
-		Username:     username,
-		Email:        email,
-		PasswordHash: passwordHash,
-	}
+const (
+	roleAdmin string = "Admin"
+	roleUser  string = "User"
+)
 
-	if err := a.db.WithContext(ctx).Create(&user).Error; err != nil {
-		return err, 0
-	}
-	return nil, user.Id
+func (a *AuthRep) TxCreateUser(ctx context.Context, username, email, passwordHash string) (int64, error) {
+	var userID int64
 
+	err := a.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		users := models.Users{
+			Username:     username,
+			Email:        email,
+			PasswordHash: passwordHash,
+		}
+
+		if err := tx.Create(&users).Error; err != nil {
+			if errors.Is(err, gorm.ErrDuplicatedKey) {
+
+				return fmt.Errorf("create user %w", UserExist)
+			}
+
+			return err
+		}
+
+		err := a.txSetRole(ctx, tx, users.Id)
+		if err != nil {
+			return fmt.Errorf("set role error %w", SetRoleError)
+		}
+		userID = users.Id
+		return nil
+
+	})
+	return userID, err
 }
 
-func (a *AuthRep) SetRole(ctx context.Context, id int64) error {
-	role := models.Roles{}
-	a.db.Where("role = ?", "User").First(&role)
-	return a.db.Create(&models.UsersRoles{
-		UserId: id,
-		RoleId: role.Id,
-	}).Error
+func (a *AuthRep) txSetRole(ctx context.Context, tx *gorm.DB, userId int64) error {
+
+	roles := models.Roles{}
+
+	if err := tx.WithContext(ctx).Where("role = ?", roleUser).First(&roles).Error; err != nil {
+		return err
+	}
+
+	usersRoles := models.UsersRoles{
+		UserId: userId,
+		RoleId: roles.Id,
+	}
+	if err := tx.Create(&usersRoles).Error; err != nil {
+		return err
+	}
+	return nil
 }
