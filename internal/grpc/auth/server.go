@@ -2,7 +2,8 @@ package auth
 
 import (
 	"context"
-	"log/slog"
+	"errors"
+	"main/internal/service"
 	"main/internal/validation"
 	"strings"
 
@@ -15,7 +16,6 @@ import (
 type serverAPI struct {
 	sso1.UnimplementedAuthServiceServer
 	auth Auth
-	log  *slog.Logger
 }
 
 type Auth interface {
@@ -24,10 +24,9 @@ type Auth interface {
 	AdminCheck(ctx context.Context, accessToken string) (bool, error)
 }
 
-func Register(grpcServ *grpc.Server, auth Auth, log *slog.Logger) {
+func Register(grpcServ *grpc.Server, auth Auth) {
 	sso1.RegisterAuthServiceServer(grpcServ, &serverAPI{
 		auth: auth,
-		log:  log,
 	})
 
 }
@@ -59,7 +58,21 @@ func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*s
 
 	success, err := s.auth.UserRegister(ctx, username, email, password)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to register user")
+		switch {
+		case errors.Is(err, service.ErrUserAlreadyExist):
+			return nil, status.Error(codes.AlreadyExists, "User already exists")
+
+		case errors.Is(err, service.ErrUserCreating):
+			return nil, status.Error(codes.Internal, "Failed to create user")
+
+		case errors.Is(err, service.ErrPasswordHashing):
+			return nil, status.Error(codes.Internal, "Something went wrong with password")
+
+		default:
+			return nil, status.Error(codes.Internal, "Something went wrong")
+
+		}
+
 	}
 
 	return &sso1.RegisterResponse{Success: success}, nil
@@ -70,5 +83,5 @@ func (s *serverAPI) Logout(ctx context.Context, req *sso1.LogoutRequest) (*sso1.
 }
 
 func (s *serverAPI) AdminCheck(ctx context.Context, req *sso1.AdminCheckRequest) (*sso1.AdminCheckResponse, error) {
-	return &sso1.AdminCheckResponse{IsAdmin: true}, nil
+	return &sso1.AdminCheckResponse{IsAdmin: false}, nil
 }
