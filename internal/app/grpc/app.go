@@ -22,7 +22,7 @@ type App struct {
 func New(log *slog.Logger, port int, authService authRPC.Auth) *App {
 	gRPCServer := grpc.NewServer()
 
-	authRPC.Register(gRPCServer, authService, log)
+	authRPC.Register(gRPCServer, authService)
 
 	return &App{
 		log:        log,
