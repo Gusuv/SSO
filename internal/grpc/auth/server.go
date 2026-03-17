@@ -42,7 +42,14 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.Lo
 
 	accessToken, refreshToken, userId, err := s.auth.UserLogin(ctx, email, password, req.GetAppId())
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to login")
+		switch {
+		case errors.Is(err, service.ErrUserNotFound):
+			return nil, status.Error(codes.NotFound, "User not found")
+		case errors.Is(err, service.ErrInvalidPassword):
+			return nil, status.Error(codes.Unauthenticated, "Invalid password")
+		default:
+			return nil, status.Error(codes.Internal, "Something went wrong")
+		}
 	}
 	return &sso1.LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken, UserId: userId}, nil
 }
