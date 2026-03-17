@@ -3,6 +3,7 @@ package repository
 import "errors"
 
 var (
-	UserExist    = errors.New("user already exist")
-	SetRoleError = errors.New("can`t set user role")
+	ErrUserExist    = errors.New("user already exist")
+	ErrSetRoleError = errors.New("can`t set user role")
+	ErrUserNotFound = errors.New("email not found")
 )
