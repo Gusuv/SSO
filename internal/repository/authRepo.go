@@ -35,7 +35,7 @@ func (a *AuthRep) TxCreateUser(ctx context.Context, username, email, passwordHas
 		if err := tx.Create(&users).Error; err != nil {
 			if errors.Is(err, gorm.ErrDuplicatedKey) {
 
-				return fmt.Errorf("create user %w", UserExist)
+				return fmt.Errorf("create user %w", ErrUserExist)
 			}
 
 			return err
@@ -43,7 +43,7 @@ func (a *AuthRep) TxCreateUser(ctx context.Context, username, email, passwordHas
 
 		err := a.txSetRole(ctx, tx, users.Id)
 		if err != nil {
-			return fmt.Errorf("set role error %w", SetRoleError)
+			return fmt.Errorf("set role error %w", ErrSetRoleError)
 		}
 		userID = users.Id
 		return nil
@@ -68,4 +68,16 @@ func (a *AuthRep) txSetRole(ctx context.Context, tx *gorm.DB, userId int64) erro
 		return err
 	}
 	return nil
+}
+
+func (a *AuthRep) GetUserByEmail(ctx context.Context, email string) (*models.Users, error) {
+	user := models.Users{}
+	if err := a.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("user not found %w", ErrUserNotFound)
+		}
+		return nil, fmt.Errorf("get user by email %w", err)
+	}
+	return &user, nil
 }
