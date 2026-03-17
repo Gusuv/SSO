@@ -11,10 +11,11 @@ import (
 )
 
 type Config struct {
-	Env      string        `yaml:"env" env-default:"local"`
-	TokenTTL time.Duration `yaml:"token_ttl" env-required:"true"`
-	Db       DbConfig      `yaml:"db"`
-	Grpc     GRPCConfig    `yaml:"grpc"`
+	Env       string        `yaml:"env" env-default:"local"`
+	TokenTTL  time.Duration `yaml:"token_ttl" env-required:"true"`
+	Db        DbConfig      `yaml:"db"`
+	Grpc      GRPCConfig    `yaml:"grpc"`
+	JWTSecret string        `env:"TOKEN_SECRET"`
 }
 
 type DbConfig struct {
