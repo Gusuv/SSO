@@ -9,7 +9,9 @@ import (
 
 func main() {
 
-	cfg := config.MustLoad()
+	cfgPath := config.FetchConfigPath()
+
+	cfg := config.MustLoad(cfgPath)
 
 	log := logger.AddLogger(cfg.Env)
 
