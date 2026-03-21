@@ -32,9 +32,7 @@ type GRPCConfig struct {
 	Timeout time.Duration `yaml:"timeout"`
 }
 
-func MustLoad() *Config {
-	configPath := fetchConfigPath()
-
+func MustLoad(configPath string) *Config {
 	godotenv.Load(".env")
 
 	if configPath == "" {
@@ -63,7 +61,18 @@ func (c *Config) DSN() string {
 	return dsn
 }
 
-func fetchConfigPath() string {
+func (c *Config) DbUrl() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		c.Db.User,
+		c.Db.Password,
+		c.Db.Host,
+		c.Db.Port,
+		c.Db.Name,
+		c.Db.SSLMode,
+	)
+}
+
+func FetchConfigPath() string {
 	var res string
 
 	flag.StringVar(&res, "config", "", "Config file path")
