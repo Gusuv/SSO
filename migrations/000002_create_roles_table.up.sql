@@ -1,0 +1,5 @@
+--up
+CREATE TABLE  roles (
+    id SERIAL PRIMARY KEY,
+    role TEXT NOT NULL UNIQUE
+);
