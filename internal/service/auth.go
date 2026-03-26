@@ -13,20 +13,24 @@ import (
 type AuthService struct {
 	log      *slog.Logger
 	rep      AuthRepo
+	jwt      AuthToken
 	tokenTTL time.Duration
 }
 
 type AuthRepo interface {
 	TxCreateUser(ctx context.Context, username, email, passwordHash string) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.Users, error)
-	// In development
 }
 
-func New(log *slog.Logger, rep AuthRepo, tokenTTL time.Duration) *AuthService {
-	return &AuthService{log: log, rep: rep, tokenTTL: tokenTTL}
+type AuthToken interface {
+	GenerateToken(userId, appID int64) (string, string, error)
 }
 
-func (a *AuthService) UserLogin(ctx context.Context, email, password string, appID int64) (accessToken, refreshToken string, userId int64, err error) {
+func New(log *slog.Logger, rep AuthRepo, tokenTTL time.Duration, jwt AuthToken) *AuthService {
+	return &AuthService{log: log, rep: rep, tokenTTL: tokenTTL, jwt: jwt}
+}
+
+func (a *AuthService) UserLogin(ctx context.Context, email, password string, appID int64) (accessT string, refreshT string, userId int64, err error) {
 	user, err := a.rep.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repository.ErrUserNotFound) {
@@ -44,7 +48,12 @@ func (a *AuthService) UserLogin(ctx context.Context, email, password string, app
 		slog.Int64("id", user.Id),
 		slog.String("Username", user.Username))
 
-	return "In development", "In development", user.Id, nil
+	accessToken, refreshToken, err := a.jwt.GenerateToken(user.Id, appID)
+	if err != nil {
+		return "", "", 0, err
+	}
+
+	return accessToken, refreshToken, user.Id, nil
 }
 
 func (a *AuthService) UserRegister(ctx context.Context, username, email, password string) (success bool, err error) {
