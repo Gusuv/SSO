@@ -50,6 +50,7 @@ func (a *AuthService) UserLogin(ctx context.Context, email, password string, app
 
 	accessToken, refreshToken, err := a.jwt.GenerateToken(user.Id, appID)
 	if err != nil {
+		a.log.Error("errror with jwt", slog.Any("err", err))
 		return "", "", 0, err
 	}
 
