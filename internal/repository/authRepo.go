@@ -70,14 +70,28 @@ func (a *AuthRep) txSetRole(ctx context.Context, tx *gorm.DB, userId int64) erro
 	return nil
 }
 
-func (a *AuthRep) GetUserByEmail(ctx context.Context, email string) (*models.Users, error) {
-	user := models.Users{}
-	if err := a.db.WithContext(ctx).Where("email = ?", email).First(&user).Error; err != nil {
+func (a *AuthRep) GetUserByEmail(ctx context.Context, email string) (*models.Users, *models.Roles, error) {
+
+	user := models.Users{
+		Email: email,
+	}
+	role := models.Roles{}
+	userRoles := models.UsersRoles{}
+
+	if err := a.db.WithContext(ctx).Where("email = ?", user.Email).First(&user).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("user not found %w", ErrUserNotFound)
+			return nil, nil, fmt.Errorf("user not found %w", ErrUserNotFound)
 		}
-		return nil, fmt.Errorf("get user by email %w", err)
+		return nil, nil, fmt.Errorf("get user by email %w", err)
 	}
-	return &user, nil
+
+	if err := a.db.WithContext(ctx).Where("user_id = ?", user.Id).First(&userRoles).Error; err != nil {
+		return nil, nil, fmt.Errorf("get user roles %w", err)
+	}
+	if err := a.db.WithContext(ctx).Where("id = ?", userRoles.RoleId).First(&role).Error; err != nil {
+		return nil, nil, fmt.Errorf("get role %w", err)
+	}
+
+	return &user, &role, nil
 }
