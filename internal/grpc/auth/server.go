@@ -19,7 +19,7 @@ type serverAPI struct {
 }
 
 type Auth interface {
-	UserLogin(ctx context.Context, email, password string, appID int64) (accessToken, refreshToken string, userId int64, err error)
+	UserLogin(ctx context.Context, email, password string, appID int64) (accessToken, refreshToken string, userId, expiresAt int64, err error)
 	UserRegister(ctx context.Context, username, email, password string) (success bool, err error)
 	AdminCheck(ctx context.Context, accessToken string) (bool, error)
 }
@@ -40,7 +40,7 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.Lo
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	accessToken, refreshToken, userId, err := s.auth.UserLogin(ctx, email, password, req.GetAppId())
+	accessToken, refreshToken, userId, expiresAt, err := s.auth.UserLogin(ctx, email, password, req.GetAppId())
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrUserNotFound):
@@ -51,7 +51,7 @@ func (s *serverAPI) Login(ctx context.Context, req *sso1.LoginRequest) (*sso1.Lo
 			return nil, status.Error(codes.Internal, "Something went wrong")
 		}
 	}
-	return &sso1.LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken, UserId: userId}, nil
+	return &sso1.LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken, UserId: userId, ExpiresAt: expiresAt}, nil
 }
 
 func (s *serverAPI) Register(ctx context.Context, req *sso1.RegisterRequest) (*sso1.RegisterResponse, error) {
