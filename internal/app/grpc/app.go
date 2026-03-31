@@ -31,33 +31,33 @@ func New(log *slog.Logger, port int, authService authRPC.Auth) *App {
 	}
 }
 
-func (a *App) Run() error {
-	const oper = "appgrpc.Run"
+const (
+	runOp  = "appgrpc.Run"
+	stopOp = "appgrpc.Stop"
+)
 
-	log := a.log.With(slog.String("oper", oper), slog.Int("port", a.port))
+func (a *App) Run() error {
+
+	log := a.log.With(slog.String("op", runOp), slog.Int("port", a.port))
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
 
 	if err != nil {
-		return fmt.Errorf("%s: %w", oper, err)
+		return fmt.Errorf("%s: %w", runOp, err)
 	}
 
 	log.Info("gRPC Run", slog.String("addr", l.Addr().String()))
 
 	if err := a.gRPCServer.Serve(l); err != nil {
-		return fmt.Errorf("%s: %w", oper, err)
+		return fmt.Errorf("%s: %w", runOp, err)
 	}
 
 	return nil
 }
 
 func (a *App) stop() {
-
-	const oper = "appgrpc.Stop"
-
 	a.gRPCServer.GracefulStop()
-
-	a.log.With(slog.String("operation", oper)).Info("gRPC Stopped", slog.Int("port", a.port))
+	a.log.With(slog.String("op", stopOp)).Info("gRPC Stopped", slog.Int("port", a.port))
 }
 
 func (a *App) ReadStop() {
