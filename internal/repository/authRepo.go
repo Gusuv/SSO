@@ -41,7 +41,7 @@ func (a *AuthRep) TxCreateUser(ctx context.Context, username, email, passwordHas
 			return err
 		}
 
-		err := a.txSetRole(ctx, tx, users.Id)
+		err := a.setRole(ctx, tx, users.Id)
 		if err != nil {
 			return fmt.Errorf("set role error %w", ErrSetRoleError)
 		}
@@ -52,7 +52,7 @@ func (a *AuthRep) TxCreateUser(ctx context.Context, username, email, passwordHas
 	return userID, err
 }
 
-func (a *AuthRep) txSetRole(ctx context.Context, tx *gorm.DB, userId int64) error {
+func (a *AuthRep) setRole(ctx context.Context, tx *gorm.DB, userId int64) error {
 
 	roles := models.Roles{}
 
@@ -70,28 +70,36 @@ func (a *AuthRep) txSetRole(ctx context.Context, tx *gorm.DB, userId int64) erro
 	return nil
 }
 
-func (a *AuthRep) GetUserByEmail(ctx context.Context, email string) (*models.Users, *models.Roles, error) {
-
-	user := models.Users{
-		Email: email,
+func (a *AuthRep) GetUserWithRole(ctx context.Context, email string) (*models.Users, string, error) {
+	type result struct {
+		models.Users
+		role string
 	}
-	role := models.Roles{}
-	userRoles := models.UsersRoles{}
+	var res result
 
-	if err := a.db.WithContext(ctx).Where("email = ?", user.Email).First(&user).Error; err != nil {
-
+	if err := a.db.WithContext(ctx).Table("users").
+		Select("users.id, users.username, users.password_hash, roles.role").
+		Joins("JOIN users_roles ur ON ur.user_id = users.id").
+		Joins("JOIN roles ON roles.id = ur.role_id").
+		Where("users.email = ?", email).
+		First(&res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil, fmt.Errorf("user not found %w", ErrUserNotFound)
+			return nil, "", fmt.Errorf("user not found: %w", ErrUserNotFound)
 		}
-		return nil, nil, fmt.Errorf("get user by email %w", err)
+		return nil, "", fmt.Errorf("get user with role: %w", err)
 	}
+	return &res.Users, res.role, nil
+}
 
-	if err := a.db.WithContext(ctx).Where("user_id = ?", user.Id).First(&userRoles).Error; err != nil {
-		return nil, nil, fmt.Errorf("get user roles %w", err)
+func (a *AuthRep) AddRefreshToken(ctx context.Context, jwt *models.JWT) error {
+	refreshToken := models.Refresh_tokens{
+		UserId:    jwt.UserId,
+		TokenHash: jwt.RefreshHash,
+		ExpiresAt: &jwt.ExpiresAt,
 	}
-	if err := a.db.WithContext(ctx).Where("id = ?", userRoles.RoleId).First(&role).Error; err != nil {
-		return nil, nil, fmt.Errorf("get role %w", err)
-	}
+	if err := a.db.WithContext(ctx).Create(&refreshToken).Error; err != nil {
 
-	return &user, &role, nil
+		return fmt.Errorf("add refresh token: %w", err)
+	}
+	return nil
 }
