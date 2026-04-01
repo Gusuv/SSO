@@ -22,6 +22,7 @@ type Auth interface {
 	UserLogin(ctx context.Context, email, password string, appID int64) (accessToken, refreshToken string, userId, expiresAt int64, err error)
 	UserRegister(ctx context.Context, username, email, password string) (success bool, err error)
 	AdminCheck(ctx context.Context, accessToken string) (bool, error)
+	LogOut(ctx context.Context, refreshToken string) (string, error)
 }
 
 func Register(grpcServ *grpc.Server, auth Auth) {
