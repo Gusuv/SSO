@@ -1,17 +1,17 @@
 package security
 
 import (
-	"strconv"
+	"main/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
-type AccessClaims struct {
-	UserId string
-	RoleId string
-	AppId  string
+type accessClaims struct {
+	UserId int64
+	Role   string
+	AppId  int64
 	jwt.RegisteredClaims
 }
 
@@ -26,23 +26,31 @@ func NewToken(secret string, tokenTTL time.Duration) *JWTService {
 		TokenTTL: tokenTTL,
 	}
 }
-func (j *JWTService) GenerateToken(userId, appId int64, role string) (string, string, error) {
 
-	claimss := AccessClaims{
-		UserId: strconv.FormatInt(userId, 10),
-		RoleId: role,
-		AppId:  strconv.FormatInt(appId, 10),
+func (j *JWTService) GenerateToken(userId, appId int64, role string) (*models.JWT, error) {
+
+	claims := accessClaims{
+		UserId: userId,
+		Role:   role,
+		AppId:  appId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.TokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		}}
 
-	accesToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claimss).SignedString(j.Secret)
+	accesToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(j.Secret)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
 	refreshToken := uuid.NewString()
 
-	return accesToken, refreshToken, nil
+	jwt := models.JWT{
+		AccessToken:  accesToken,
+		RefreshToken: refreshToken,
+		UserId:       userId,
+		ExpiresAt:    time.Now().Add(j.TokenTTL),
+	}
+
+	return &jwt, nil
 }
