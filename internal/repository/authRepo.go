@@ -37,7 +37,6 @@ func (a *AuthRep) TxCreateUser(ctx context.Context, username, email, passwordHas
 
 				return fmt.Errorf("create user %w", ErrUserExist)
 			}
-
 			return err
 		}
 
@@ -70,10 +69,10 @@ func (a *AuthRep) setRole(ctx context.Context, tx *gorm.DB, userId int64) error 
 	return nil
 }
 
-func (a *AuthRep) GetUserWithRole(ctx context.Context, email string) (*models.Users, string, error) {
+func (a *AuthRep) GetUserWithRole(ctx context.Context, email string) (*models.Users, []string, error) {
 	type result struct {
 		models.Users
-		role string
+		Role string
 	}
 	var res result
 
@@ -81,18 +80,19 @@ func (a *AuthRep) GetUserWithRole(ctx context.Context, email string) (*models.Us
 		Select("users.id, users.username, users.password_hash, roles.role").
 		Joins("JOIN users_roles ur ON ur.user_id = users.id").
 		Joins("JOIN roles ON roles.id = ur.role_id").
-		Where("users.email = ?", email).
-		First(&res).Error; err != nil {
+		Where("users.email = ?", email).First(&res).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, "", fmt.Errorf("user not found: %w", ErrUserNotFound)
+			return nil, nil, fmt.Errorf("user not found: %w", ErrUserNotFound)
 		}
-		return nil, "", fmt.Errorf("get user with role: %w", err)
+		return nil, nil, fmt.Errorf("get user with role: %w", err)
 	}
-	return &res.Users, res.role, nil
+
+	roleList := []string{res.Role}
+	return &res.Users, roleList, nil
 }
 
 func (a *AuthRep) AddRefreshToken(ctx context.Context, jwt *models.JWT) error {
-	refreshToken := models.Refresh_tokens{
+	refreshToken := models.RefreshTokens{
 		UserId:    jwt.UserId,
 		TokenHash: jwt.RefreshHash,
 		ExpiresAt: &jwt.ExpiresAt,
