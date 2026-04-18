@@ -1,6 +1,8 @@
 env: "local"
 
-token_ttl: 1h
+token_ttl:
+  refresh: 168h # 7 days
+  access: 15m
 
 grpc:
   port: 44044
