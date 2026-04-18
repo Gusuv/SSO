@@ -19,7 +19,7 @@ func New(log *slog.Logger, cfg *config.Config, db *gorm.DB) *App {
 
 	authJWT := security.NewToken(cfg.JWTSecret, cfg.TokenTTL)
 	authRepo := repository.NewRepo(db)
-	authService := service.New(log, authRepo, cfg.TokenTTL, authJWT)
+	authService := service.New(log, authRepo, authJWT)
 	grpcServer := appgrpc.New(log, cfg.Grpc.Port, authService)
 
 	return &App{
