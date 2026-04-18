@@ -11,11 +11,11 @@ import (
 )
 
 type Config struct {
-	Env       string        `yaml:"env" env-default:"local"`
-	TokenTTL  time.Duration `yaml:"token_ttl" env-required:"true"`
-	Db        DbConfig      `yaml:"db"`
-	Grpc      GRPCConfig    `yaml:"grpc"`
-	JWTSecret string        `env:"TOKEN_SECRET"`
+	Env       string     `yaml:"env" env-default:"local"`
+	TokenTTL  TokensTTL  `yaml:"token_ttl" env-required:"true"`
+	Db        DbConfig   `yaml:"db"`
+	Grpc      GRPCConfig `yaml:"grpc"`
+	JWTSecret string     `env:"TOKEN_SECRET"`
 }
 
 type DbConfig struct {
@@ -30,6 +30,11 @@ type DbConfig struct {
 type GRPCConfig struct {
 	Port    int           `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`
+}
+
+type TokensTTL struct {
+	Refresh time.Duration `yaml:"refresh"`
+	Access  time.Duration `yaml:"access"`
 }
 
 func MustLoad(configPath string) *Config {
