@@ -4,5 +4,6 @@ CREATE TABLE refresh_tokens  (
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     token_hash TEXT NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMPTZ NOT NULL
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE
 );
