@@ -4,9 +4,10 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"main/internal/config"
 	"os"
 	"path/filepath"
+
+	"github.com/Gusuv/sso/internal/config"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -54,7 +55,7 @@ func main() {
 	}
 
 	if migrateError != nil && !errors.Is(migrateError, migrate.ErrNoChange) {
-		fmt.Println(err)
+		fmt.Println(migrateError)
 		os.Exit(1)
 	}
 
