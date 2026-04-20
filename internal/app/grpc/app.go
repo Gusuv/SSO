@@ -3,10 +3,11 @@ package appgrpc
 import (
 	"fmt"
 	"log/slog"
-	authRPC "main/internal/grpc/auth"
 	"os"
 	"os/signal"
 	"syscall"
+
+	authRPC "github.com/Gusuv/sso/internal/grpc/auth"
 
 	"net"
 
