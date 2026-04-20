@@ -2,12 +2,13 @@ package app
 
 import (
 	"log/slog"
-	appgrpc "main/internal/app/grpc"
-	"main/internal/config"
-	"main/internal/repository"
-	"main/internal/security/hash"
-	security "main/internal/security/jwt"
-	"main/internal/service"
+
+	appgrpc "github.com/Gusuv/sso/internal/app/grpc"
+	"github.com/Gusuv/sso/internal/config"
+	"github.com/Gusuv/sso/internal/repository"
+	"github.com/Gusuv/sso/internal/security/hash"
+	security "github.com/Gusuv/sso/internal/security/jwt"
+	"github.com/Gusuv/sso/internal/service"
 
 	"gorm.io/gorm"
 )
