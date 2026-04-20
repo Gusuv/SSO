@@ -1,10 +1,10 @@
 package main
 
 import (
-	"main/internal/app"
-	"main/internal/config"
-	"main/internal/database"
-	"main/logger"
+	"github.com/Gusuv/sso/internal/app"
+	"github.com/Gusuv/sso/internal/config"
+	"github.com/Gusuv/sso/internal/database"
+	"github.com/Gusuv/sso/logger"
 )
 
 func main() {
