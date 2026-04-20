@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"main/internal/config"
 	"time"
+
+	"github.com/Gusuv/sso/internal/config"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
